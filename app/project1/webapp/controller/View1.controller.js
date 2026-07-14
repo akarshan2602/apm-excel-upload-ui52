@@ -1,8 +1,20 @@
+// =====================================================================================================================
+
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
-    "sap/m/MessageToast"
-], function (Controller, JSONModel, MessageToast) {
+    "sap/m/MessageToast",
+    "sap/m/Column",
+    "sap/m/Text",
+    "sap/m/ColumnListItem"
+], function (
+    Controller,
+    JSONModel,
+    MessageToast,
+    Column,
+    Text,
+    ColumnListItem
+) {
 
     "use strict";
 
@@ -36,17 +48,59 @@ sap.ui.define([
 
                 var aData = XLSX.utils.sheet_to_json(worksheet);
 
+                if (!aData.length) {
+                    MessageToast.show("Excel contains no data");
+                    return;
+                }
+
                 var oModel = new JSONModel({
                     excelData: aData
                 });
 
                 this.getView().setModel(oModel, "excel");
 
+                this._createDynamicTable(aData);
+
                 MessageToast.show("Excel loaded successfully");
 
             }.bind(this);
 
             reader.readAsBinaryString(oFile);
+        },
+
+        _createDynamicTable: function (aData) {
+
+            var oTable = this.byId("idTable");
+
+            oTable.removeAllColumns();
+
+            var aKeys = Object.keys(aData[0]);
+
+            var oTemplate = new ColumnListItem();
+
+            aKeys.forEach(function (sKey) {
+
+                oTable.addColumn(
+                    new Column({
+                        header: new Text({
+                            text: sKey
+                        })
+                    })
+                );
+
+                oTemplate.addCell(
+                    new Text({
+                        text: "{excel>" + sKey + "}"
+                    })
+                );
+
+            });
+
+            oTable.bindItems({
+                path: "excel>/excelData",
+                template: oTemplate
+            });
+
         },
 
         onSubmit: async function () {
@@ -63,13 +117,6 @@ sap.ui.define([
                     oItem.getBindingContext("excel").getObject()
                 );
 
-            });
-            aSelectedData = aSelectedData.map(function (emp) {
-                return {
-                    EMPID: String(emp.EMPID),
-                    NAME: String(emp.NAME),
-                    LOCATION: String(emp.LOCATION)
-                };
             });
 
             console.log("Selected Rows");
@@ -111,5 +158,5 @@ sap.ui.define([
         }
 
     });
-    
+
 });

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+gen/
+.gen/
+coverage/
+
+.vscode/
+
+*.db
+*.sqlite
+*.sqlite3

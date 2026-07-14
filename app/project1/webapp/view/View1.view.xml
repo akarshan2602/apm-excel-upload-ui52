@@ -4,7 +4,7 @@
     xmlns="sap.m"
     xmlns:u="sap.ui.unified">
 
-    <Page title="Excel Upload">
+    <Page title="Generic Excel Upload">
 
         <content>
 
@@ -23,35 +23,7 @@
 
                 <Table
                     id="idTable"
-                    mode="MultiSelect"
-                    items="{excel>/excelData}">
-
-                    <columns>
-                        <Column>
-                            <Text text="EMPID"/>
-                        </Column>
-
-                        <Column>
-                            <Text text="NAME"/>
-                        </Column>
-
-                        <Column>
-                            <Text text="LOCATION"/>
-                        </Column>
-                    </columns>
-
-                    <items>
-                        <ColumnListItem>
-
-                            <cells>
-                                <Text text="{excel>EMPID}"/>
-                                <Text text="{excel>NAME}"/>
-                                <Text text="{excel>LOCATION}"/>
-                            </cells>
-
-                        </ColumnListItem>
-                    </items>
-
+                    mode="MultiSelect">
                 </Table>
 
             </VBox>
