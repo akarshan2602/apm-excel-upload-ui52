@@ -20,6 +20,11 @@
                     text="Submit Selected Rows"
                     press="onSubmit"
                     class="sapUiSmallMarginTop"/>
+                    <!-- BUTTON FOR DOWNLOADING ERROR REPORT     -->
+                <Button
+                    text="Download Error Report"
+                    press="onDownloadErrorReport"
+                    class="sapUiSmallMarginTop"/>
 
                 <HBox
                     justifyContent="SpaceAround"
