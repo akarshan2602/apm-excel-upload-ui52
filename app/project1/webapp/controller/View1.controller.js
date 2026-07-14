@@ -1,5 +1,3 @@
-// =====================================================================================================================
-
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
@@ -53,6 +51,8 @@ sap.ui.define([
                     return;
                 }
 
+                this._validateData(aData);
+
                 var oModel = new JSONModel({
                     excelData: aData
                 });
@@ -68,6 +68,52 @@ sap.ui.define([
             reader.readAsBinaryString(oFile);
         },
 
+        _validateData: function (aData) {
+
+    var aMandatoryFields = [
+        "EMPID",
+        "NAME",
+        "LOCATION"
+    ];
+
+    var oEmpIdTracker = {};
+
+    aData.forEach(function (oRow) {
+
+        var aErrors = [];
+
+        aMandatoryFields.forEach(function (sField) {
+
+            if (
+                !Object.prototype.hasOwnProperty.call(oRow, sField) ||
+                oRow[sField] === null ||
+                oRow[sField] === undefined ||
+                String(oRow[sField]).trim() === ""
+            ) {
+                aErrors.push("Missing " + sField);
+            }
+
+        });
+
+        var sEmpId = String(oRow.EMPID || "").trim();
+
+        if (sEmpId) {
+
+            if (oEmpIdTracker[sEmpId]) {
+                aErrors.push("DUPLICATE EMPID");
+            }
+
+            oEmpIdTracker[sEmpId] = true;
+        }
+
+        oRow.STATUS =
+            aErrors.length === 0
+                ? "VALID"
+                : aErrors.join(", ");
+
+    });
+
+},
         _createDynamicTable: function (aData) {
 
             var oTable = this.byId("idTable");
@@ -113,14 +159,42 @@ sap.ui.define([
 
             aSelectedItems.forEach(function (oItem) {
 
-                aSelectedData.push(
-                    oItem.getBindingContext("excel").getObject()
-                );
+                var oData =
+                    oItem.getBindingContext("excel").getObject();
+
+                if (oData.STATUS === "VALID") {
+
+                    aSelectedData.push({
+                        EMPID: String(oData.EMPID || ""),
+                        NAME: String(oData.NAME || ""),
+                        LOCATION: String(oData.LOCATION || "")
+                    });
+
+                }
 
             });
 
-            console.log("Selected Rows");
+            if (!aSelectedData.length) {
+
+                MessageToast.show(
+                    "No valid records selected"
+                );
+
+                return;
+            }
+
+            console.log("Valid Selected Rows");
             console.log(aSelectedData);
+
+            console.log(
+                JSON.stringify(
+                    {
+                        employees: aSelectedData
+                    },
+                    null,
+                    2
+                )
+            );
 
             try {
 
@@ -145,13 +219,17 @@ sap.ui.define([
 
                 console.log(result);
 
-                MessageToast.show("Data sent successfully");
+                MessageToast.show(
+                    "Data sent successfully"
+                );
 
             } catch (error) {
 
                 console.error(error);
 
-                MessageToast.show("Backend call failed");
+                MessageToast.show(
+                    "Backend call failed"
+                );
 
             }
 
