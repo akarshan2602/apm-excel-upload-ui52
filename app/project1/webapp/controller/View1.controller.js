@@ -21,8 +21,53 @@ sap.ui.define(
     ) {
         "use strict";
 
+        // Schemas for different entities with mandatory fields
+        const SCHEMAS = {
+            Employees: {
+                mandatoryFields: ["EMPID", "NAME", "LOCATION"],
+            },
+
+            Products: {
+                mandatoryFields: ["ProductID", "ProductName", "Price"],
+            },
+
+            Stores: {
+                mandatoryFields: ["StoreID", "StoreName", "City"],
+            },
+        };
+
         return Controller.extend("excelupload.project1.controller.View1", {
             onInit: function () {},
+            // Enhancement: Automatically determine uploaded entity type
+            _detectSchema: function (aData) {
+                var aHeaders = Object.keys(aData[0]);
+
+                if (
+                    aHeaders.includes("EMPID") &&
+                    aHeaders.includes("NAME") &&
+                    aHeaders.includes("LOCATION")
+                ) {
+                    return "Employees";
+                }
+
+                if (
+                    aHeaders.includes("ProductID") &&
+                    aHeaders.includes("ProductName") &&
+                    aHeaders.includes("Price")
+                ) {
+                    return "Products";
+                }
+
+                if (
+                    aHeaders.includes("StoreID") &&
+                    aHeaders.includes("StoreName") &&
+                    aHeaders.includes("City")
+                ) {
+                    return "Stores";
+                }
+
+                return null;
+            },
 
             onFileUpload: function (oEvent) {
                 var oFile = oEvent.getParameter("files")[0];
@@ -51,7 +96,17 @@ sap.ui.define(
                         return;
                     }
 
-                    // Enhancement: Validate uploaded Excel data before binding to UI
+                    //------------------------------------------------- Enhancement: Detect uploaded entity type----------------------------------------------
+                    this._entityType = this._detectSchema(aData);
+
+                    if (!this._entityType) {
+                        MessageToast.show("Unsupported Excel format");
+
+                        return;
+                    }
+
+                    console.log("Detected Entity:", this._entityType);
+
                     this._validateData(aData);
 
                     // Enhancement: Check existing records in DB after local validation
@@ -73,8 +128,8 @@ sap.ui.define(
             },
 
             _validateData: function (aData) {
-                // Enhancement: Mandatory field validation rules
-                var aMandatoryFields = ["EMPID", "NAME", "LOCATION"];
+                // Enhancement: Read validation rules from schema configuration
+                var aMandatoryFields = SCHEMAS[this._entityType].mandatoryFields;
 
                 // Enhancement: Track EMPIDs to identify duplicate records
                 var oEmpIdTracker = {};

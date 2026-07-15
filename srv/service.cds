@@ -2,6 +2,10 @@ using excel from '../db/schema';
 
 service ExcelService {
 
+    entity Products as projection on excel.Products;
+
+    entity Stores as projection on excel.Stores;
+    
     entity Employees as projection on excel.Employees;
 
     action uploadEmployees(
