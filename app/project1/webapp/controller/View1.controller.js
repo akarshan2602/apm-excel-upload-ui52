@@ -127,6 +127,7 @@ sap.ui.define(
                     invalid: iInvalid,
                     duplicate: iDuplicate,
                     dbDuplicates: 0,
+                    updateCandidates: 0,
                 };
             },
 
@@ -141,7 +142,7 @@ sap.ui.define(
                         }
                     });
 
-                    const response = await fetch("/odata/v4/excel/checkDuplicates", {
+                    const response = await fetch("/odata/v4/excel/getEmployeesByIds", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -157,26 +158,40 @@ sap.ui.define(
 
                     const result = await response.json();
 
-                    const aExisting = result.value || [];
-
-                    const aExistingIds = aExisting.map(function (item) {
-                        return item.EMPID;
-                    });
+                    const aDbEmployees = result.value || [];
 
                     var iDbDuplicates = 0;
+                    var iUpdateCandidates = 0;
 
                     aData.forEach(function (oRow) {
-                        if (oRow.STATUS === "VALID" && aExistingIds.includes(String(oRow.EMPID))) {
-                            oRow.STATUS = "ALREADY EXISTS IN DB";
+                        var oDbEmployee = aDbEmployees.find(function (oDbRow) {
+                            return String(oDbRow.EMPID) === String(oRow.EMPID);
+                        });
 
-                            // Enhancement: Mark records already available in database
-                            oRow.STATUS_STATE = "Warning";
+                        if (oRow.STATUS === "VALID" && oDbEmployee) {
+                            // Enhancement: Detect data changes
+                            if (
+                                String(oDbEmployee.NAME) !== String(oRow.NAME) ||
+                                String(oDbEmployee.LOCATION) !== String(oRow.LOCATION)
+                            ) {
+                                oRow.STATUS = "UPDATE CANDIDATE";
 
-                            iDbDuplicates++;
+                                oRow.STATUS_STATE = "Information";
+
+                                iUpdateCandidates++;
+                            } else {
+                                oRow.STATUS = "ALREADY EXISTS IN DB";
+
+                                oRow.STATUS_STATE = "Warning";
+
+                                iDbDuplicates++;
+                            }
                         }
                     });
 
                     this._summary.dbDuplicates = iDbDuplicates;
+
+                    this._summary.updateCandidates = iUpdateCandidates;
                 } catch (error) {
                     console.error("Database duplicate validation error", error);
                 }
