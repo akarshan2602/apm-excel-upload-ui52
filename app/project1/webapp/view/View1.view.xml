@@ -20,6 +20,10 @@
                     text="Submit Selected Rows"
                     press="onSubmit"
                     class="sapUiSmallMarginTop"/>
+                <Button
+                     text="Update Selected Records"
+                    press="onUpdateRecords"
+                    class="sapUiSmallMarginTop"/>
                     <!-- BUTTON FOR DOWNLOADING ERROR REPORT     -->
                 <Button
                     text="Download Error Report"

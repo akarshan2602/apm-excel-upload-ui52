@@ -5,7 +5,8 @@ gen/
 coverage/
 
 .vscode/
-
 *.db
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal

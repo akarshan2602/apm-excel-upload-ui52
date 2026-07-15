@@ -7,8 +7,18 @@ sap.ui.define(
         "sap/m/Text",
         "sap/m/ColumnListItem",
         "sap/m/ObjectStatus",
+        "sap/m/MessageBox",
     ],
-    function (Controller, JSONModel, MessageToast, Column, Text, ColumnListItem, ObjectStatus) {
+    function (
+        Controller,
+        JSONModel,
+        MessageToast,
+        Column,
+        Text,
+        ColumnListItem,
+        ObjectStatus,
+        MessageBox
+    ) {
         "use strict";
 
         return Controller.extend("excelupload.project1.controller.View1", {
@@ -320,6 +330,68 @@ sap.ui.define(
 
                     MessageToast.show("Backend call failed");
                 }
+            },
+            // Enhancement: Update selected update-candidate records
+            onUpdateRecords: function () {
+                var oTable = this.byId("idTable");
+
+                var aSelectedItems = oTable.getSelectedItems();
+
+                var aUpdateRecords = [];
+
+                aSelectedItems.forEach(function (oItem) {
+                    var oData = oItem.getBindingContext("excel").getObject();
+
+                    if (oData.STATUS === "UPDATE CANDIDATE") {
+                        aUpdateRecords.push({
+                            // Enhancement: Convert values before CAP update request
+                            EMPID: String(oData.EMPID || ""),
+                            NAME: String(oData.NAME || ""),
+                            LOCATION: String(oData.LOCATION || ""),
+                        });
+                    }
+                });
+
+                if (!aUpdateRecords.length) {
+                    MessageToast.show("No update candidates selected");
+
+                    return;
+                }
+
+                MessageBox.confirm("Do you want to update the selected records?", {
+                    title: "Confirm Update",
+
+                    onClose: async function (sAction) {
+                        if (sAction !== MessageBox.Action.OK) {
+                            return;
+                        }
+
+                        try {
+                            //debugger;
+                            console.log(JSON.stringify(aUpdateRecords, null, 2));
+
+                            const response = await fetch("/odata/v4/excel/updateEmployees", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    employees: aUpdateRecords,
+                                }),
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(await response.text());
+                            }
+
+                            MessageToast.show("Records updated successfully");
+                        } catch (error) {
+                            console.error(error);
+
+                            MessageToast.show("Update failed");
+                        }
+                    },
+                });
             },
         });
     }

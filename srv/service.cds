@@ -16,7 +16,10 @@ service ExcelService {
     action getEmployeesByIds(
         empIds : many String
     ) returns many EmployeeDetails;
-
+        // Enhancement: Update existing employee records
+    action updateEmployees(
+        employees : many EmployeeInput
+    ) returns String;
 }
 
 type EmployeeInput {

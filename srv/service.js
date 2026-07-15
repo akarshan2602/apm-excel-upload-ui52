@@ -19,6 +19,28 @@ module.exports = cds.service.impl(async function () {
         return "Success";
     });
 
+    // Enhancement: Update existing employee records
+    this.on("updateEmployees", async (req) => {
+        const employees = req.data.employees;
+
+        const db = await cds.connect.to("db");
+
+        for (const emp of employees) {
+            await db.run(
+                UPDATE("excel.Employees")
+                    .set({
+                        NAME: String(emp.NAME),
+                        LOCATION: String(emp.LOCATION),
+                    })
+                    .where({
+                        EMPID: String(emp.EMPID),
+                    })
+            );
+        }
+
+        return "Employees Updated";
+    });
+
     // Enhancement: Check whether uploaded EMPIDs already exist
     this.on("checkDuplicates", async (req) => {
         const empIds = req.data.empIds;
