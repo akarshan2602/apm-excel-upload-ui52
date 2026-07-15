@@ -49,6 +49,9 @@
                     <ObjectStatus
                         title="DB Duplicate"
                         text="{excel>/summary/dbDuplicates}"/>
+                    <ObjectStatus
+                        title="Update Candidate"
+                        text="{excel>/summary/updateCandidates}"/>
 
                 </HBox>
 

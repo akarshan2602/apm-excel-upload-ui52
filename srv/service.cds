@@ -12,6 +12,11 @@ service ExcelService {
         empIds : many String
     ) returns many ExistingEmployee;
 
+    // Enhancement: Fetch complete employee details for update-candidate analysis
+    action getEmployeesByIds(
+        empIds : many String
+    ) returns many EmployeeDetails;
+
 }
 
 type EmployeeInput {
@@ -22,4 +27,10 @@ type EmployeeInput {
 
 type ExistingEmployee {
     EMPID : String;
+}
+
+type EmployeeDetails {
+    EMPID    : String;
+    NAME     : String;
+    LOCATION : String;
 }
