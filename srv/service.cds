@@ -7,6 +7,15 @@ service ExcelService {
     entity Stores as projection on excel.Stores;
     
     entity Employees as projection on excel.Employees;
+    // Enhancement: Upload product records
+    action uploadProducts(
+        products : many ProductInput
+    ) returns String;
+
+// Enhancement: Upload store records
+    action uploadStores(
+        stores : many StoreInput
+    ) returns String;
 
     action uploadEmployees(
         employees : many EmployeeInput
@@ -31,7 +40,16 @@ type EmployeeInput {
     NAME     : String;
     LOCATION : String;
 }
-
+type ProductInput {
+    ProductID   : String;
+    ProductName : String;
+    Price       : String;
+}
+type StoreInput {
+    StoreID   : String;
+    StoreName : String;
+    City      : String;
+}
 type ExistingEmployee {
     EMPID : String;
 }

@@ -40,6 +40,42 @@ module.exports = cds.service.impl(async function () {
 
         return "Employees Updated";
     });
+    // ---------------------------------------Enhancement: Upload product records
+    this.on("uploadProducts", async (req) => {
+        const products = req.data.products;
+
+        const db = await cds.connect.to("db");
+
+        await db.run(
+            INSERT.into("excel.Products").entries(
+                products.map((product) => ({
+                    ProductID: String(product.ProductID),
+                    ProductName: String(product.ProductName),
+                    Price: String(product.Price),
+                }))
+            )
+        );
+
+        return "Products Uploaded";
+    });
+    // ---------------------------------------Enhancement: Upload store records
+    this.on("uploadStores", async (req) => {
+        const stores = req.data.stores;
+
+        const db = await cds.connect.to("db");
+
+        await db.run(
+            INSERT.into("excel.Stores").entries(
+                stores.map((store) => ({
+                    StoreID: String(store.StoreID),
+                    StoreName: String(store.StoreName),
+                    City: String(store.City),
+                }))
+            )
+        );
+
+        return "Stores Uploaded";
+    });
 
     // Enhancement: Check whether uploaded EMPIDs already exist
     this.on("checkDuplicates", async (req) => {

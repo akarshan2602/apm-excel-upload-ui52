@@ -330,6 +330,85 @@ sap.ui.define(
 
                 MessageToast.show("Error report downloaded");
             },
+            // onSubmit: async function () {
+            //     var oTable = this.byId("idTable");
+
+            //     var aSelectedItems = oTable.getSelectedItems();
+
+            //     var aSelectedData = [];
+
+            //     aSelectedItems.forEach(function (oItem) {
+            //         var oData = oItem.getBindingContext("excel").getObject();
+
+            //         // Enhancement: Only valid records are allowed to be uploaded
+            //         if (oData.STATUS === "VALID") {
+            //             // Enhancement: Build payload dynamically based on detected entity
+            //             aSelectedData.push({ ...oData });
+
+            //             delete aSelectedData[aSelectedData.length - 1].STATUS;
+
+            //             delete aSelectedData[aSelectedData.length - 1].STATUS_STATE;
+            //         }
+            //     });
+
+            //     // Validation check before backend submission
+            //     if (!aSelectedData.length) {
+            //         MessageToast.show("No valid records selected");
+
+            //         return;
+            //     }
+
+            //     console.log("Valid Selected Rows");
+            //     console.log(aSelectedData);
+
+            //     try {
+            //         // -----------------------Enhancement: Route upload based on detected entity
+            //         let sEndpoint = "";
+            //         let sPayloadProperty = "";
+
+            //         switch (this._entityType) {
+            //             case "Employees":
+            //                 sEndpoint = "/odata/v4/excel/uploadEmployees";
+            //                 sPayloadProperty = "employees";
+            //                 break;
+
+            //             case "Products":
+            //                 sEndpoint = "/odata/v4/excel/uploadProducts";
+            //                 sPayloadProperty = "products";
+            //                 break;
+
+            //             case "Stores":
+            //                 sEndpoint = "/odata/v4/excel/uploadStores";
+            //                 sPayloadProperty = "stores";
+            //                 break;
+            //         }
+            //         const response = await fetch(sEndpoint, {
+            //             method: "POST",
+            //             headers: {
+            //                 "Content-Type": "application/json",
+            //             },
+            //             body: JSON.stringify({
+            //                 aSelectedData,
+            //             }),
+            //         });
+
+            //         if (!response.ok) {
+            //             throw new Error(await response.text());
+            //         }
+
+            //         const result = await response.text();
+
+            //         console.log(result);
+
+            //         MessageToast.show("Data sent successfully");
+            //     } catch (error) {
+            //         console.error(error);
+
+            //         MessageToast.show("Backend call failed");
+            //     }
+            // },
+            // Enhancement: Update selected update-candidate records
+
             onSubmit: async function () {
                 var oTable = this.byId("idTable");
 
@@ -342,15 +421,20 @@ sap.ui.define(
 
                     // Enhancement: Only valid records are allowed to be uploaded
                     if (oData.STATUS === "VALID") {
-                        aSelectedData.push({
-                            EMPID: String(oData.EMPID || ""),
-                            NAME: String(oData.NAME || ""),
-                            LOCATION: String(oData.LOCATION || ""),
+                        var oPayloadData = {};
+
+                        // Enhancement: Convert all values to strings for CAP action compatibility
+                        Object.keys(oData).forEach(function (sKey) {
+                            oPayloadData[sKey] = String(oData[sKey]);
                         });
+
+                        delete oPayloadData.STATUS;
+                        delete oPayloadData.STATUS_STATE;
+
+                        aSelectedData.push(oPayloadData);
                     }
                 });
 
-                // Validation check before backend submission
                 if (!aSelectedData.length) {
                     MessageToast.show("No valid records selected");
 
@@ -358,17 +442,58 @@ sap.ui.define(
                 }
 
                 console.log("Valid Selected Rows");
+
                 console.log(aSelectedData);
 
                 try {
-                    const response = await fetch("/odata/v4/excel/uploadEmployees", {
+                    // Enhancement: Route upload based on detected entity
+                    let sEndpoint = "";
+
+                    let sPayloadProperty = "";
+
+                    switch (this._entityType) {
+                        case "Employees":
+                            sEndpoint = "/odata/v4/excel/uploadEmployees";
+
+                            sPayloadProperty = "employees";
+
+                            break;
+
+                        case "Products":
+                            sEndpoint = "/odata/v4/excel/uploadProducts";
+
+                            sPayloadProperty = "products";
+
+                            break;
+
+                        case "Stores":
+                            sEndpoint = "/odata/v4/excel/uploadStores";
+
+                            sPayloadProperty = "stores";
+
+                            break;
+
+                        default:
+                            MessageToast.show("Unsupported entity type");
+
+                            return;
+                    }
+
+                    // Enhancement: Build payload dynamically
+                    // Enhancement: Build payload dynamically for selected entity
+                    const oPayload = {};
+
+                    oPayload[sPayloadProperty] = aSelectedData;
+
+                    console.log("Payload:");
+                    console.log(JSON.stringify(oPayload, null, 2));
+
+                    const response = await fetch(sEndpoint, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({
-                            employees: aSelectedData,
-                        }),
+                        body: JSON.stringify(oPayload),
                     });
 
                     if (!response.ok) {
@@ -386,7 +511,7 @@ sap.ui.define(
                     MessageToast.show("Backend call failed");
                 }
             },
-            // Enhancement: Update selected update-candidate records
+
             onUpdateRecords: function () {
                 var oTable = this.byId("idTable");
 
